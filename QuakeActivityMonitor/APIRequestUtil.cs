@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
-using System.Runtime.Serialization;
 using Newtonsoft.Json;
-using System.Diagnostics;
 
 namespace QuakeActivityMonitor
 {
@@ -40,8 +34,8 @@ namespace QuakeActivityMonitor
                 HttpResponseMessage response = await client.GetAsync(Parameters);
                 if (response.IsSuccessStatusCode)
                 {
-                    var jsonOutput = response.Content.ReadAsStringAsync().Result;
-                    JsonOutput = JsonConvert.DeserializeObject<RootObject>(jsonOutput);
+                    var jsonResult = response.Content.ReadAsStringAsync().Result;
+                    JsonOutput = JsonConvert.DeserializeObject<RootObject>(jsonResult);
                 }
 
             }

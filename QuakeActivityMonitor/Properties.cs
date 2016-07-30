@@ -12,7 +12,7 @@ namespace QuakeActivityMonitor
         public string Place { get; set; }
         public object Time { get; set; }
         public object Updated { get; set; }
-        public int Tz { get; set; }
+        public int? Tz { get; set; }
         public string Url { get; set; }
         public string Detail { get; set; }
         public int? Felt { get; set; }
@@ -20,8 +20,8 @@ namespace QuakeActivityMonitor
         public double? Mmi { get; set; }
         public string Alert { get; set; }
         public string Status { get; set; }
-        public int Tsunami { get; set; }
-        public int Sig { get; set; }
+        public int? Tsunami { get; set; }
+        public int? Sig { get; set; }
         public string Net { get; set; }
         public string Code { get; set; }
         public string Ids { get; set; }
