@@ -33,7 +33,12 @@ namespace QuakeActivityMonitor
             }
             catch (Exception ex)
             {
-                string msg = ex.Message;
+                string errorLogPath = AppDomain.CurrentDomain.BaseDirectory +
+                    "ErrorLog " + DateTime.Now.Date.Month + "-" +
+                    DateTime.Now.Date.Day + "-" + DateTime.Now.Date.Year + " " +
+                    DateTime.Now.TimeOfDay.Hours + "H" + DateTime.Now.TimeOfDay.Minutes + "M" + ".txt";
+                ErrorLog log = new ErrorLog(errorLogPath);
+                log.WriteError(ex.Message);
             }
 
             return records;

@@ -29,20 +29,34 @@ namespace QuakeActivityMonitor
         /// <returns></returns>
         private async Task RunAsync()
         {
-            using (var client = new HttpClient())
+            try
             {
-                client.BaseAddress = new Uri(BaseUrl);
-                client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-
-                HttpResponseMessage response = await client.GetAsync(Parameters);
-                if (response.IsSuccessStatusCode)
+                using (var client = new HttpClient())
                 {
-                    var jsonResult = response.Content.ReadAsStringAsync().Result;
-                    JsonOutput = JsonConvert.DeserializeObject<RootObject>(jsonResult);
-                }
+                    client.BaseAddress = new Uri(BaseUrl);
+                    client.DefaultRequestHeaders.Accept.Clear();
+                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
+                    HttpResponseMessage response = await client.GetAsync(Parameters);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var jsonResult = response.Content.ReadAsStringAsync().Result;
+                        JsonOutput = JsonConvert.DeserializeObject<RootObject>(jsonResult);
+                    }
+                }
             }
+            catch(Exception ex)
+            {
+                string errorLogPath = AppDomain.CurrentDomain.BaseDirectory +
+                    "ErrorLog " + DateTime.Now.Date.Month + "-" +
+                    DateTime.Now.Date.Day + "-" + DateTime.Now.Date.Year + " " +
+                    DateTime.Now.TimeOfDay.Hours + "H" + DateTime.Now.TimeOfDay.Minutes + "M" + ".txt";
+                ErrorLog log = new ErrorLog(errorLogPath);
+                log.WriteError(ex.Message);
+                Console.WriteLine(ex.Message + "{0} Press press any key to close.", Environment.NewLine);
+                Console.ReadKey();
+            }
+            
         }
     }
 }

@@ -29,7 +29,10 @@ namespace QuakeActivityMonitor
         {
             var quakePosition = new GeoCoordinate(latitude, longitude);
             var nearestCities = new List<string>();
-            var distanceList =
+
+            try
+            {
+                var distanceList =
                 from record in records
                 select new
                 {
@@ -37,10 +40,21 @@ namespace QuakeActivityMonitor
                     distance = quakePosition.GetDistanceTo(new GeoCoordinate(record.Latitude, record.Longitude))
                 };
 
-            nearestCities =
-                (from row in distanceList
-                 orderby row.distance ascending
-                 select row.Name).Take(3).ToList<string>();
+                nearestCities =
+                    (from row in distanceList
+                     orderby row.distance ascending
+                     select row.Name).Take(3).ToList<string>();
+            }
+            catch(Exception ex)
+            {
+                string errorLogPath = AppDomain.CurrentDomain.BaseDirectory +
+                    "ErrorLog " + DateTime.Now.Date.Month + "-" +
+                    DateTime.Now.Date.Day + "-" + DateTime.Now.Date.Year + " " +
+                    DateTime.Now.TimeOfDay.Hours + "H" + DateTime.Now.TimeOfDay.Minutes + "M" + ".txt";
+                ErrorLog log = new ErrorLog(errorLogPath);
+                log.WriteError(ex.Message);
+            }
+            
 
             return nearestCities;
         }
@@ -52,22 +66,35 @@ namespace QuakeActivityMonitor
         /// <param name="records">List of records from CSV file.</param>
         private static void EarthQuakeActivity(List<Feature> features, IList<WorldCities> records)
         {
-            foreach (Feature feature in features)
+            try
             {
-                var properties = feature.Properties;
-                var geometry = feature.Geometry;
-                var magnitude = properties.Mag;
-                
-                //gets readable date time from Epoch time
-                var time = new DateTime(1970, 1, 1, 0, 0, 0).AddMilliseconds(Convert.ToInt64(properties.Time)).ToLocalTime().ToString();
-                var coordinates = geometry.Coordinates[1] + ", " + geometry.Coordinates[0];
-                var nearestCities = FindClosestCities(records, geometry.Coordinates[0], geometry.Coordinates[1]);
-                var output = $@"Date/Time: {time}{Environment.NewLine}Magnitude: {magnitude}{Environment.NewLine}Coordinates: {coordinates}";
+                foreach (Feature feature in features)
+                {
+                    var properties = feature.Properties;
+                    var geometry = feature.Geometry;
+                    var magnitude = properties.Mag;
 
-                Console.WriteLine(output);
-                Console.WriteLine("Cities nearest earthquake location: {0}, {1}, {2}", nearestCities[0], nearestCities[1], nearestCities[2]);
-                Console.WriteLine(Environment.NewLine);
+                    //gets readable date time from Epoch time
+                    var time = new DateTime(1970, 1, 1, 0, 0, 0).AddMilliseconds(Convert.ToInt64(properties.Time)).ToLocalTime().ToString();
+                    var coordinates = geometry.Coordinates[1] + ", " + geometry.Coordinates[0];
+                    var nearestCities = FindClosestCities(records, geometry.Coordinates[0], geometry.Coordinates[1]);
+                    var output = $@"Date/Time: {time}{Environment.NewLine}Magnitude: {magnitude}{Environment.NewLine}Coordinates: {coordinates}";
+
+                    Console.WriteLine(output);
+                    Console.WriteLine("Cities nearest earthquake location: {0}, {1}, {2}", nearestCities[0], nearestCities[1], nearestCities[2]);
+                    Console.WriteLine(Environment.NewLine);
+                }
             }
+            catch(Exception ex)
+            {
+                string errorLogPath = AppDomain.CurrentDomain.BaseDirectory +
+                    "ErrorLog " + DateTime.Now.Date.Month + "-" +
+                    DateTime.Now.Date.Day + "-" + DateTime.Now.Date.Year + " " +
+                    DateTime.Now.TimeOfDay.Hours + "H" + DateTime.Now.TimeOfDay.Minutes + "M" + ".txt";
+                ErrorLog log = new ErrorLog(errorLogPath);
+                log.WriteError(ex.Message);
+            }
+            
         }
 
         /// <summary>
@@ -90,15 +117,28 @@ namespace QuakeActivityMonitor
         /// <param name="records">Record of world cities from CSV file.</param>
         private static void Monitor(IList<WorldCities> records)
         {
-            var parameter = CreateUrlParameter(-TIME_INTERVAL);
-
-            var activity = new APIRequestUtil(BASE_ADDRESS, parameter).ConsumeAPI();
-            var features = activity.Features;
-            Console.WriteLine("***************Monitor function called*************");
-            if(features.Count > 0)
+            try
             {
-                EarthQuakeActivity(features, records);
+                var parameter = CreateUrlParameter(-TIME_INTERVAL);
+
+                var activity = new APIRequestUtil(BASE_ADDRESS, parameter).ConsumeAPI();
+                var features = activity.Features;
+                Console.WriteLine("***************Monitor function called*************");
+                if (features.Count > 0)
+                {
+                    EarthQuakeActivity(features, records);
+                }
             }
+            catch(Exception ex)
+            {
+                string errorLogPath = AppDomain.CurrentDomain.BaseDirectory +
+                    "ErrorLog " + DateTime.Now.Date.Month + "-" +
+                    DateTime.Now.Date.Day + "-" + DateTime.Now.Date.Year + " " +
+                    DateTime.Now.TimeOfDay.Hours + "H" + DateTime.Now.TimeOfDay.Minutes + "M" + ".txt";
+                ErrorLog log = new ErrorLog(errorLogPath);
+                log.WriteError(ex.Message);
+            }
+            
             
         }
 
@@ -117,32 +157,51 @@ namespace QuakeActivityMonitor
             return parameter;
         }
 
-        static void Main(string[] args)
+        private static void ErrorLogging(string errorMessage)
         {
-            //create url parameter for past hour
-            var parameter = CreateUrlParameter(-60 * 60 * 1000);
-
-            //get the records from the CSV
-            var readerUtil = new CsvReaderUtil<WorldCities, WorldCitiesClassMap>(@FILE_LOCATION);
-            var records = readerUtil.GetRecords();
-
-            //get earthquake activity from the past hour
-            APIRequestUtil request = new APIRequestUtil(BASE_ADDRESS, parameter);
-            var activityPastHour = request.ConsumeAPI();
-
-            //get features for past hour earthquake activity
-            var features = activityPastHour.Features;
-            Console.WriteLine("----- Earthquake activity in the past hour -----{0}", Environment.NewLine);
-
-            EarthQuakeActivity(features, records);
-
-            Console.WriteLine("----- Continued Monitoring -----");
-            ContinuousMonitoring(records);
-
-            Console.ReadKey();
-
+            string errorLogPath = AppDomain.CurrentDomain.BaseDirectory +
+                    "ErrorLog " + DateTime.Now.Date.Month + "-" +
+                    DateTime.Now.Date.Day + "-" + DateTime.Now.Date.Year + " " +
+                    DateTime.Now.TimeOfDay.Hours + "H" + DateTime.Now.TimeOfDay.Minutes + "M" + ".txt";
+            ErrorLog log = new ErrorLog(errorLogPath);
+            log.WriteError(errorMessage);
         }
 
-        
+        static void Main(string[] args)
+        {
+            try
+            {
+                //create url parameter for past hour
+                var parameter = CreateUrlParameter(-60 * 60 * 1000);
+
+                //get the records from the CSV
+                var readerUtil = new CsvReaderUtil<WorldCities, WorldCitiesClassMap>(@FILE_LOCATION);
+                var records = readerUtil.GetRecords();
+
+                //get earthquake activity from the past hour
+                APIRequestUtil request = new APIRequestUtil(BASE_ADDRESS, parameter);
+                var activityPastHour = request.ConsumeAPI();
+
+                //get features for past hour earthquake activity
+                var features = activityPastHour.Features;
+                Console.WriteLine("----- Earthquake activity in the past hour -----{0}", Environment.NewLine);
+
+                EarthQuakeActivity(features, records);
+
+                Console.WriteLine("----- Continued Monitoring -----");
+                ContinuousMonitoring(records);
+
+                Console.ReadKey();
+            }
+            catch(Exception ex)
+            {
+                string errorLogPath = AppDomain.CurrentDomain.BaseDirectory +
+                     "ErrorLog " + DateTime.Now.Date.Month + "-" +
+                     DateTime.Now.Date.Day + "-" + DateTime.Now.Date.Year + " " +
+                     DateTime.Now.TimeOfDay.Hours + "H" + DateTime.Now.TimeOfDay.Minutes + "M" + ".txt";
+                ErrorLog log = new ErrorLog(errorLogPath);
+                log.WriteError(ex.Message);
+            }
+        }
     }
 }

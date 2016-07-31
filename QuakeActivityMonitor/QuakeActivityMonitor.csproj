@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="APIRequestUtil.cs" />
     <Compile Include="CsvReaderUtil.cs" />
+    <Compile Include="ErrorLog.cs" />
     <Compile Include="Feature.cs" />
     <Compile Include="Geometry.cs" />
     <Compile Include="Metadata.cs" />
