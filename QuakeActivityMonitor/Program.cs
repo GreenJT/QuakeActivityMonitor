@@ -136,7 +136,7 @@ namespace QuakeActivityMonitor
             try
             {
                 var parameter = CreateUrlParameter(-TIME_INTERVAL);
-
+                Console.WriteLine("{0} - Checking for additional seismic activity...", DateTime.Now.ToLocalTime().ToString());
                 var activity = new APIRequestUtil(BASE_ADDRESS, parameter).ConsumeAPI();
                 var features = activity.Features;
                 if (features.Count > 0)
@@ -203,13 +203,12 @@ namespace QuakeActivityMonitor
 
                 //get features for past hour earthquake activity
                 var features = activityPastHour.Features;
-                Console.WriteLine("----- Earthquake activity in the past hour -----{0}", Environment.NewLine);
+                Console.WriteLine("{0}{0}-------------- Earthquake activity in the past hour --------------{0}", Environment.NewLine);
 
                 EarthQuakeActivity(features, records);
 
-                Console.WriteLine("----- Continued Monitoring -----");
+                Console.WriteLine("---------- Monitoring for further seismic activity every {0} seconds ----------{1}", (TIME_INTERVAL / 1000), Environment.NewLine);
                 ContinuousMonitoring(records);
-
                 Console.ReadKey();
             }
             catch(Exception ex)
