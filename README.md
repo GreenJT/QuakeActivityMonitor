@@ -3,7 +3,7 @@ QuakeActivityMonitor is a desktop application which monitors and displays earthq
 
 ### Building and Running the application ###
 1. Open and compile the project in Visual Studio 2015.
-2. Ensure that the value for FileLocation in app.config contains the filepath for the worldcities csv.
+2. Ensure that the value for FileLocation in app.config contains the filepath for the worldcities csv file.
 3. The application can be run using Visual Studio or by opening the executable located in the bin folder.
 4. Once the application is run it will display earthquakes that have occurred in the past hour and will continue to monitor for seismic activity until closed by the user.
 5. The application can be ended by closing the command line or pressing the any key.
