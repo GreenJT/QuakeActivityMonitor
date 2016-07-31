@@ -138,7 +138,7 @@ namespace QuakeActivityMonitor
             try
             {
                 var parameter = CreateUrlParameter(-TIME_INTERVAL);
-                Console.WriteLine("{0} - Checking for additional seismic activity...", DateTime.Now.ToLocalTime().ToString());
+                Console.WriteLine("{0} - Checking for additional seismic activity...{1}{1}", DateTime.Now.ToLocalTime().ToString(), Environment.NewLine);
                 var activity = new APIRequestUtil(BASE_ADDRESS, parameter).ConsumeAPI();
                 var features = activity.Features;
                 if (features.Count > 0)
@@ -211,7 +211,7 @@ namespace QuakeActivityMonitor
                 EarthQuakeActivity(features, records);
 
                 //obscure Simpsons refrence
-                Console.WriteLine("---------- Monitoring for further seismic activity every {0} seconds----------{1}{1}Press the any key to exit", (TIME_INTERVAL / 1000), Environment.NewLine);
+                Console.WriteLine("---------- Monitoring for further seismic activity every {0} seconds----------{1}{1}Press the any key to end continuous monitoring", (TIME_INTERVAL / 1000), Environment.NewLine);
 
                 //begin continuous monitoring 
                 ContinuousMonitoring(records);
