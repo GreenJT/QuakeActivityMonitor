@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Configuration;
 using System.Data;
-using System.Data.OleDb;
-using System.IO;
-using CsvHelper;
 using System.Linq;
 using System.Device.Location;
 using System.Collections.Generic;
@@ -21,75 +18,13 @@ namespace QuakeActivityMonitor
         static readonly string FILE_LOCATION = ConfigurationManager.AppSettings["FileLocation"].ToString();
         static readonly int TIME_INTERVAL = Convert.ToInt32(ConfigurationManager.AppSettings["Interval"]);
 
-        public static void TestCSV()
-        {
-            string foo = "worldcities.csv";
-            string filename = @"C:\Users\worldcities.csv";
-            var file = System.IO.Path.GetDirectoryName(filename);
-
-            var connString = string.Format(
-                @"Provider=Microsoft.Jet.OleDb.4.0; Data Source={0};Extended Properties=""Text;HDR=YES;FMT=Delimited""",
-                file);
-
-            using (var conn = new OleDbConnection(connString))
-            {
-                conn.Open();
-                var query = "SELECT id, ( 3959 * acos( cos( radians(37) ) * cos( radians( latitude ) ) " +
-                    "* cos(radians(longitude) - radians(-122)) + sin(radians(37)) * sin(radians(latitude)) ) ) AS distance " +
-                    "FROM [" + foo + "] " +
-                    "HAVING distance < 25 " +
-                    "ORDER BY distance ";// +
-                                         //"LIMIT 20; ";
-                //query = "SELECT * FROM [" + foo + "]";
-                using (var adapter = new OleDbDataAdapter(query, conn))
-                {
-                    var ds = new DataSet("CSV File");
-                    adapter.Fill(ds);
-                }
-
-            }
-        
-
-        }
-
-        public static IList<string> TestCSVHelper()
-        {
-            var closestCities = new List<string>();
-
-            try
-            {
-                using (var fileReader = File.OpenText(@"E:\My Documents\Projects\worldcities.csv"))
-                using (var csvResult = new CsvReader(fileReader))
-                {
-                    csvResult.Configuration.RegisterClassMap<WorldCitiesClassMap>();
-
-                    var records = csvResult.GetRecords<WorldCities>().ToList();
-                    var quakePosition = new GeoCoordinate(35.6795006, -121.1183319);
-
-                    var distanceList =
-                        from cities in records
-                        select new
-                        {
-                            cities.Name,
-                            distances = quakePosition.GetDistanceTo(
-                            new GeoCoordinate(cities.Latitude, cities.Longitude))
-                        };
-
-                    closestCities =
-                        (from cities in distanceList
-                         orderby cities.distances ascending
-                         select cities.Name).Take(3).ToList<string>();
-                                    
-                }
-            }
-            catch(Exception e)
-            {
-                String msg = e.Message;
-            }
-
-            return closestCities;
-        }
-
+        /// <summary>
+        /// Finds the 3 closest cities to the passed longitude and latitude.
+        /// </summary>
+        /// <param name="records"></param>
+        /// <param name="longitude"></param>
+        /// <param name="latitude"></param>
+        /// <returns>String list of the 3 cities nearest the given lat and long parameters.</returns>
         private static List<string> FindClosestCities(IList<WorldCities> records, double longitude, double latitude)
         {
             var quakePosition = new GeoCoordinate(latitude, longitude);
@@ -122,9 +57,9 @@ namespace QuakeActivityMonitor
                 var properties = feature.Properties;
                 var geometry = feature.Geometry;
                 var magnitude = properties.Mag;
-
+                
                 //gets readable date time from Epoch time
-                var time = new DateTime(1970, 1, 1, 0, 0, 0).AddMilliseconds(Convert.ToInt64(properties.Time)).ToString();
+                var time = new DateTime(1970, 1, 1, 0, 0, 0).AddMilliseconds(Convert.ToInt64(properties.Time)).ToLocalTime().ToString();
                 var coordinates = geometry.Coordinates[1] + ", " + geometry.Coordinates[0];
                 var nearestCities = FindClosestCities(records, geometry.Coordinates[0], geometry.Coordinates[1]);
                 var output = $@"Date/Time: {time}{Environment.NewLine}Magnitude: {magnitude}{Environment.NewLine}Coordinates: {coordinates}";
@@ -150,7 +85,7 @@ namespace QuakeActivityMonitor
         }
 
         /// <summary>
-        /// 
+        /// Continuously Monitors for earthquakes
         /// </summary>
         /// <param name="records">Record of world cities from CSV file.</param>
         private static void Monitor(IList<WorldCities> records)
@@ -159,6 +94,7 @@ namespace QuakeActivityMonitor
 
             var activity = new APIRequestUtil(BASE_ADDRESS, parameter).ConsumeAPI();
             var features = activity.Features;
+            Console.WriteLine("***************Monitor function called*************");
             if(features.Count > 0)
             {
                 EarthQuakeActivity(features, records);
@@ -183,11 +119,6 @@ namespace QuakeActivityMonitor
 
         static void Main(string[] args)
         {
-            //create the url
-            //DateTime dateTime = DateTime.UtcNow.AddHours(-1);
-            //var startTime = PARAMETER + dateTime.ToString("s");
-            //var parameter = METHOD + FORMAT + startTime + ORDERBY;
-
             //create url parameter for past hour
             var parameter = CreateUrlParameter(-60 * 60 * 1000);
 
@@ -206,19 +137,10 @@ namespace QuakeActivityMonitor
             EarthQuakeActivity(features, records);
 
             Console.WriteLine("----- Continued Monitoring -----");
-
             ContinuousMonitoring(records);
 
             Console.ReadKey();
 
-            //Console.WriteLine("Press ESC to stop");
-            //do
-            //{
-            //    while (!Console.KeyAvailable)
-            //    {
-
-            //    }
-            //} while (Console.ReadKey(true).Key != ConsoleKey.Escape);
         }
 
         

@@ -15,7 +15,10 @@ namespace QuakeActivityMonitor
         {
             Filename = filename;  
         }
-
+        /// <summary>
+        /// Maps CSV columns to the model then returns a list of the records.
+        /// </summary>
+        /// <returns>Returns list of CSV records</returns>
         public IList<T> GetRecords()
         {
             var records = new List<T>();

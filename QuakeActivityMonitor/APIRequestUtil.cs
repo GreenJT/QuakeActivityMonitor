@@ -23,6 +23,10 @@ namespace QuakeActivityMonitor
             return JsonOutput;
         }
 
+        /// <summary>
+        /// Makes an API request
+        /// </summary>
+        /// <returns></returns>
         private async Task RunAsync()
         {
             using (var client = new HttpClient())
