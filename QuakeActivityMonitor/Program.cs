@@ -32,14 +32,16 @@ namespace QuakeActivityMonitor
 
             try
             {
+                //gets the distance between the given lat and long and those in the records
                 var distanceList =
                 from record in records
                 select new
                 {
-                    record.Name, record.CountryCode,
+                    record.Name,
                     distance = quakePosition.GetDistanceTo(new GeoCoordinate(record.Latitude, record.Longitude))
                 };
 
+                //takes the three records with the shortest from the given lat and long.
                 nearestCities =
                     (from row in distanceList
                      orderby row.distance ascending
@@ -205,9 +207,13 @@ namespace QuakeActivityMonitor
                 var features = activityPastHour.Features;
                 Console.WriteLine("{0}{0}-------------- Earthquake activity in the past hour --------------{0}", Environment.NewLine);
 
+                //outputting earthquake activity in the past hour
                 EarthQuakeActivity(features, records);
 
-                Console.WriteLine("---------- Monitoring for further seismic activity every {0} seconds ----------{1}", (TIME_INTERVAL / 1000), Environment.NewLine);
+                //obscure Simpsons refrence
+                Console.WriteLine("---------- Monitoring for further seismic activity every {0} seconds----------{1}{1}Press the any key to exit", (TIME_INTERVAL / 1000), Environment.NewLine);
+
+                //begin continuous monitoring 
                 ContinuousMonitoring(records);
                 Console.ReadKey();
             }

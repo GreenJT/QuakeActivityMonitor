@@ -53,18 +53,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="APIRequestUtil.cs" />
-    <Compile Include="CsvReaderUtil.cs" />
-    <Compile Include="ErrorLog.cs" />
-    <Compile Include="Feature.cs" />
-    <Compile Include="Geometry.cs" />
-    <Compile Include="Metadata.cs" />
+    <Compile Include="Utilities\APIRequestUtil.cs" />
+    <Compile Include="Utilities\CsvReaderUtil.cs" />
+    <Compile Include="Utilities\ErrorLog.cs" />
+    <Compile Include="Models\Feature.cs" />
+    <Compile Include="Models\Geometry.cs" />
+    <Compile Include="Models\Metadata.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Properties.cs" />
+    <Compile Include="Models\Properties.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RootObject.cs" />
-    <Compile Include="WorldCities.cs" />
-    <Compile Include="WorldCitiesClassMap.cs" />
+    <Compile Include="Models\RootObject.cs" />
+    <Compile Include="Models\WorldCities.cs" />
+    <Compile Include="Models\WorldCitiesClassMap.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
@@ -72,6 +72,7 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
