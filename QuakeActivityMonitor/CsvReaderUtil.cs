@@ -11,6 +11,10 @@ namespace QuakeActivityMonitor
     {
         private string Filename;
 
+        /// <summary>
+        /// Utility to map data from a CSV to a model
+        /// </summary>
+        /// <param name="filename">File location of CSV file.</param>
         public CsvReaderUtil(string filename)
         {
             Filename = filename;  

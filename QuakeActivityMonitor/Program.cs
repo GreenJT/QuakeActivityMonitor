@@ -36,7 +36,7 @@ namespace QuakeActivityMonitor
                 from record in records
                 select new
                 {
-                    record.Name,
+                    record.Name, record.CountryCode,
                     distance = quakePosition.GetDistanceTo(new GeoCoordinate(record.Latitude, record.Longitude))
                 };
 
@@ -81,7 +81,11 @@ namespace QuakeActivityMonitor
                     var output = $@"Date/Time: {time}{Environment.NewLine}Magnitude: {magnitude}{Environment.NewLine}Coordinates: {coordinates}";
 
                     Console.WriteLine(output);
-                    Console.WriteLine("Cities nearest earthquake location: {0}, {1}, {2}", nearestCities[0], nearestCities[1], nearestCities[2]);
+                    if(nearestCities != null && nearestCities.Count > 0)
+                    {
+                        Console.WriteLine("Cities nearest earthquake location: {0}, {1}, {2}", nearestCities[0], nearestCities[1], nearestCities[2]);
+                    }
+                    
                     Console.WriteLine(Environment.NewLine);
                 }
             }
@@ -104,11 +108,23 @@ namespace QuakeActivityMonitor
         /// <param name="records"></param>
         public static void ContinuousMonitoring(IList<WorldCities> records)
         {
-            Timer myTimer = new Timer();
-            myTimer.Elapsed += delegate { Monitor(records); };
-            myTimer.Interval = TIME_INTERVAL;
-            myTimer.AutoReset = true;
-            myTimer.Start();
+            try
+            {
+                Timer myTimer = new Timer();
+                myTimer.Elapsed += delegate { Monitor(records); };
+                myTimer.Interval = TIME_INTERVAL;
+                myTimer.AutoReset = true;
+                myTimer.Start();
+            }
+            catch(Exception ex)
+            {
+                string errorLogPath = AppDomain.CurrentDomain.BaseDirectory +
+                    "ErrorLog " + DateTime.Now.Date.Month + "-" +
+                    DateTime.Now.Date.Day + "-" + DateTime.Now.Date.Year + " " +
+                    DateTime.Now.TimeOfDay.Hours + "H" + DateTime.Now.TimeOfDay.Minutes + "M" + ".txt";
+                ErrorLog log = new ErrorLog(errorLogPath);
+                log.WriteError(ex.Message);
+            }
         }
 
         /// <summary>
@@ -123,7 +139,6 @@ namespace QuakeActivityMonitor
 
                 var activity = new APIRequestUtil(BASE_ADDRESS, parameter).ConsumeAPI();
                 var features = activity.Features;
-                Console.WriteLine("***************Monitor function called*************");
                 if (features.Count > 0)
                 {
                     EarthQuakeActivity(features, records);
@@ -150,21 +165,25 @@ namespace QuakeActivityMonitor
         /// <returns></returns>
         private static string CreateUrlParameter(int timeInterval)
         {
-            DateTime time = DateTime.UtcNow.AddMilliseconds(timeInterval);
-            var timeParameter = PARAMETER + time.ToString("s");
-            var parameter = METHOD + FORMAT + timeParameter + ORDERBY;
-
-            return parameter;
-        }
-
-        private static void ErrorLogging(string errorMessage)
-        {
-            string errorLogPath = AppDomain.CurrentDomain.BaseDirectory +
+            var parameter = "";
+            try
+            {
+                DateTime time = DateTime.UtcNow.AddMilliseconds(timeInterval);
+                var timeParameter = PARAMETER + time.ToString("s");
+                parameter = METHOD + FORMAT + timeParameter + ORDERBY;
+            }
+            catch(Exception ex)
+            {
+                string errorLogPath = AppDomain.CurrentDomain.BaseDirectory +
                     "ErrorLog " + DateTime.Now.Date.Month + "-" +
                     DateTime.Now.Date.Day + "-" + DateTime.Now.Date.Year + " " +
                     DateTime.Now.TimeOfDay.Hours + "H" + DateTime.Now.TimeOfDay.Minutes + "M" + ".txt";
-            ErrorLog log = new ErrorLog(errorLogPath);
-            log.WriteError(errorMessage);
+                ErrorLog log = new ErrorLog(errorLogPath);
+                log.WriteError(ex.Message);
+            }
+            
+
+            return parameter;
         }
 
         static void Main(string[] args)

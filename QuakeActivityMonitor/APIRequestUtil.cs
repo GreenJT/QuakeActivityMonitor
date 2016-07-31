@@ -17,6 +17,10 @@ namespace QuakeActivityMonitor
             this.Parameters = parameters;
         }
 
+        /// <summary>
+        /// Consumes the information from the API
+        /// </summary>
+        /// <returns></returns>
         public RootObject ConsumeAPI()
         {
             RunAsync().Wait();

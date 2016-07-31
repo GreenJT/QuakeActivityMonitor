@@ -29,7 +29,7 @@ namespace QuakeActivityMonitor
                     ErrorWriter = File.AppendText(ErrorFilePath);
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
                 
             }
@@ -40,13 +40,21 @@ namespace QuakeActivityMonitor
         /// </summary>
         private void CreateFile()
         {
-            // create a text file at the given path
-            ErrorWriter = File.CreateText(ErrorFilePath);
+            try
+            {
+                // create a text file at the given path
+                ErrorWriter = File.CreateText(ErrorFilePath);
 
-            // place the error file header
-            var fileHeader = "******************************" + Environment.NewLine + 
-                "Error Log" + Environment.NewLine + "******************************";
-            ErrorWriter.WriteLine(fileHeader);
+                // place the error file header
+                var fileHeader = "******************************" + Environment.NewLine +
+                    "Error Log" + Environment.NewLine + "******************************";
+                ErrorWriter.WriteLine(fileHeader);
+            }
+            catch(Exception ex)
+            {
+
+            }
+            
         }
 
         /// <summary>
@@ -93,6 +101,10 @@ namespace QuakeActivityMonitor
             return error;
         }
 
+        /// <summary>
+        /// Writes the error messages to the file
+        /// </summary>
+        /// <param name="errorMessage"></param>
         public void WriteError(string errorMessage)
         {
             if(ErrorWriter != null)
